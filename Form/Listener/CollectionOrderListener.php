@@ -51,20 +51,24 @@ class CollectionOrderListener
         if (! $newCollection instanceof Collection) {
             return;
         }
+        
         /** @var $newCollection Collection */
-
-        $newCollection->clear();
         /** @var $item FormBuilder */
         foreach ($event->getForm()->get($this->name) as $item) {
             if ($item->get('_delete')->getData()) {
-                // do not re-add a deleted child
+                // do not re-add a deleted child and remove the item from the collection, 
+                $newCollection->removeElement($item->getData());
                 continue;
             }
-            if ($item->getName()) {
-                // keep key in collection
-                $newCollection[$item->getName()] = $item->getData();
-            } else {
-                $newCollection[] = $item->getData();
+
+            // Don't add the element if its already in there
+            if (!$newCollection->contains($item->getData())) {
+                if ($item->getName()) {
+                    // keep key in collection
+                    $newCollection[$item->getName()] = $item->getData();
+                } else {
+                    $newCollection[] = $item->getData();
+                }
             }
         }
     }
