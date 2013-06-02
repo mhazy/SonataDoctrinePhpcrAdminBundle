@@ -12,6 +12,7 @@
 namespace Sonata\DoctrinePHPCRAdminBundle\Form\Listener;
 
 use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\PersistentCollection;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormBuilder;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
@@ -50,6 +51,14 @@ class CollectionOrderListener
         $newCollection = $accessor->getValue($data, $this->name);
         if (! $newCollection instanceof Collection) {
             return;
+        } else if ( $newCollection instanceof PersistentCollection) {
+            // Only clear a PersistentCollection if orphanRemoval is false
+            $mapping = $newCollection->getMapping();
+            if (!empty($mapping['orphanRemoval']) && !$mapping['orphanRemoval']) {
+                $newCollection->clear();
+            }
+        } else {
+            $newCollection->clear();
         }
         
         /** @var $newCollection Collection */
